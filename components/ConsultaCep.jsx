@@ -1,18 +1,17 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, Button, ActivityIndicator } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, TextInput, Button, ActivityIndicator, ScrollView } from "react-native";
 import styles from "../styles/CepStyles";
 
 export default function ConsultaCep() {
-  const [cep, setCep] = useState("");
+  const [cep, setCep] = useState(""); // CEP digitado
+  const [cepParaBuscar, setCepParaBuscar] = useState(""); // CEP confirmado pelo botão
   const [endereco, setEndereco] = useState(null);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState("");
 
-  // Regex para validar CEP (XXXXX-XXX ou XXXXXXXX)
   const regexCep = /^\d{5}-?\d{3}$/;
 
   function handleCepChange(texto) {
-    // aplica máscara dinâmica XXXXX-XXX
     const apenasNumeros = texto.replace(/\D/g, "");
     let cepFormatado = apenasNumeros;
     if (apenasNumeros.length > 5) {
@@ -21,63 +20,89 @@ export default function ConsultaCep() {
     setCep(cepFormatado);
   }
 
-  async function buscarCep() {
-    const cepLimpo = cep.replace("-", ""); // remove máscara
-    if (!regexCep.test(cep)) {
-      setErro("Digite um CEP válido (ex: 12345-678).");
-      return;
-    }
+  useEffect(() => {
+    if (!cepParaBuscar) return;
 
-    setLoading(true);
-    setErro("");
-    setEndereco(null);
+    const cepLimpo = cepParaBuscar.replace("-", "");
 
-    try {
-      const res = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
-      const data = await res.json();
+    async function buscarCep() {
+      setLoading(true);
+      setErro("");
+      setEndereco(null);
 
-      if (data.erro) {
-        setErro("CEP não encontrado!");
-      } else {
-        setEndereco(data);
+      try {
+        const res = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+        const data = await res.json();
+
+        if (data.erro) {
+          setErro("CEP não encontrado!");
+        } else {
+          setEndereco(data);
+        }
+      } catch (e) {
+        setErro("Erro ao buscar o CEP. Tente novamente.");
+      } finally {
+        setLoading(false);
       }
-    } catch (e) {
-      setErro("Erro ao buscar o CEP. Tente novamente.");
-    } finally {
-      setLoading(false);
     }
-  }
+
+    buscarCep();
+  }, [cepParaBuscar]);
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Consulta de CEP</Text>
 
       <TextInput
         style={styles.input}
         placeholder="Digite o CEP"
         keyboardType="numeric"
-        maxLength={9} // XXXXX-XXX
+        maxLength={9}
         value={cep}
         onChangeText={handleCepChange}
       />
 
-      <View style={{ marginTop: 10 }}>
-        <Button title="Buscar" onPress={buscarCep} disabled={loading} />
-      </View>
+      <Button
+        title="Buscar"
+        onPress={() => {
+          if (!regexCep.test(cep)) {
+            setErro("Digite um CEP válido (ex: 12345-678).");
+            setEndereco(null);
+            return;
+          }
+          setCepParaBuscar(cep); // dispara o useEffect
+        }}
+        disabled={loading}
+      />
 
       {loading && <ActivityIndicator size="large" color="#0000ff" style={{ marginTop: 20 }} />}
-
       {erro ? <Text style={styles.error}>{erro}</Text> : null}
 
+      {/* Exibe os resultados em cards separados */}
       {endereco && (
-        <View style={styles.result}>
-          <Text><Text style={styles.label}>CEP:</Text> {endereco.cep}</Text>
-          <Text><Text style={styles.label}>Logradouro:</Text> {endereco.logradouro}</Text>
-          <Text><Text style={styles.label}>Bairro:</Text> {endereco.bairro}</Text>
-          <Text><Text style={styles.label}>Cidade:</Text> {endereco.localidade}</Text>
-          <Text><Text style={styles.label}>Estado:</Text> {endereco.uf}</Text>
+        <View style={styles.resultContainer}>
+          <View style={styles.card}>
+            <Text style={styles.cardLabel}>CEP:</Text>
+            <Text style={styles.cardText}>{endereco.cep}</Text>
+          </View>
+          <View style={styles.card}>
+            <Text style={styles.cardLabel}>Logradouro:</Text>
+            <Text style={styles.cardText}>{endereco.logradouro}</Text>
+          </View>
+          <View style={styles.card}>
+            <Text style={styles.cardLabel}>Bairro:</Text>
+            <Text style={styles.cardText}>{endereco.bairro}</Text>
+          </View>
+          <View style={styles.card}>
+            <Text style={styles.cardLabel}>Cidade:</Text>
+            <Text style={styles.cardText}>{endereco.localidade}</Text>
+          </View>
+          <View style={styles.card}>
+            <Text style={styles.cardLabel}>Estado:</Text>
+            <Text style={styles.cardText}>{endereco.uf}</Text>
+          </View>
         </View>
       )}
-    </View>
+    </ScrollView>
   );
 }

@@ -2,13 +2,14 @@ import { StyleSheet } from "react-native";
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
+    backgroundColor: "#f5f5f5",
   },
   title: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "bold",
     marginBottom: 20,
   },
@@ -17,24 +18,39 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 8,
-    padding: 10,
+    padding: 12,
     marginBottom: 15,
     backgroundColor: "#fff",
+    fontSize: 16,
   },
   error: {
     marginTop: 20,
     color: "red",
     fontWeight: "bold",
+    textAlign: "center",
   },
-  result: {
+  resultContainer: {
     marginTop: 20,
-    backgroundColor: "#fff",
-    padding: 15,
-    borderRadius: 8,
     width: "100%",
   },
-  label: {
+  card: {
+    backgroundColor: "#fff",
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3, // para Android
+  },
+  cardLabel: {
     fontWeight: "bold",
+    marginBottom: 5,
+    fontSize: 16,
+  },
+  cardText: {
+    fontSize: 16,
   },
 });
 
