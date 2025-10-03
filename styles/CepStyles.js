@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 5,
-    elevation: 3, // para Android
+    elevation: 3, 
   },
   cardLabel: {
     fontWeight: "bold",
